@@ -1,8 +1,11 @@
+# test_model.py
 import torch
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 from model import SimpleCNN
 import pytest
+import glob
+import os
 
 
 def count_parameters(model):
@@ -14,6 +17,7 @@ def test_model_architecture():
 
     # Test 1: Check number of parameters
     num_params = count_parameters(model)
+    print(f"Number of parameters: {num_params}")  # Added for debugging
     assert num_params < 100000, f"Model has {num_params} parameters, should be less than 100000"
 
     # Test 2: Check input shape handling
@@ -26,12 +30,16 @@ def test_model_architecture():
 
 
 def test_model_accuracy():
+    # Skip accuracy test if no model file exists
+    model_files = glob.glob('model_*.pth')
+    if not model_files:
+        pytest.skip("No trained model found. Run training first.")
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = SimpleCNN().to(device)
 
     # Load the latest model
-    import glob
-    latest_model = max(glob.glob('model_*.pth'))
+    latest_model = max(model_files)
     model.load_state_dict(torch.load(latest_model))
 
     # Prepare test data
@@ -57,6 +65,7 @@ def test_model_accuracy():
             correct += (predicted == target).sum().item()
 
     accuracy = 100 * correct / total
+    print(f"Model accuracy: {accuracy}%")  # Added for debugging
     assert accuracy > 80, f"Model accuracy is {accuracy}%, should be > 80%"
 
 
