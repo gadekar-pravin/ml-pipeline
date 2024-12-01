@@ -6,28 +6,40 @@ import torch.nn.functional as F
 class OptimizedCNN(nn.Module):
     def __init__(self):
         super(OptimizedCNN, self).__init__()
-        # First conv layer with stride
-        self.conv1 = nn.Conv2d(1, 50, kernel_size=5, stride=2, padding=2)  # 28->14
-        self.bn1 = nn.BatchNorm2d(50)
+        # Layer 1: Convolutional layer
+        # Input: 1x28x28, Output: 8x14x14 (after pooling)
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(8)
 
-        # Second conv layer with stride
-        self.conv2 = nn.Conv2d(50, 14, kernel_size=3, stride=2, padding=1)  # 14->7
-        self.bn2 = nn.BatchNorm2d(14)
+        # Layer 2: Convolutional layer
+        # Input: 8x14x14, Output: 16x7x7 (after pooling)
+        self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(16)
 
-        # Small fully connected layers
-        self.fc1 = nn.Linear(14 * 7 * 7, 24)
-        self.fc2 = nn.Linear(24, 10)
+        # Layer 3: Fully connected layer
+        # Input: 16*7*7 = 784, Output: 10
+        self.fc = nn.Linear(16 * 7 * 7, 10)
+
+        # Dropout for regularization
+        self.dropout = nn.Dropout(0.2)
 
     def forward(self, x):
-        # First conv block
-        x = F.relu(self.bn1(self.conv1(x)))
+        # First conv layer + batch norm + relu + pooling
+        x = F.max_pool2d(F.relu(self.bn1(self.conv1(x))), 2)
 
-        # Second conv block
-        x = F.relu(self.bn2(self.conv2(x)))
+        # Second conv layer + batch norm + relu + pooling
+        x = F.max_pool2d(F.relu(self.bn2(self.conv2(x))), 2)
 
-        # Flatten and fully connected layers
-        x = torch.flatten(x, 1)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        # Flatten
+        x = x.view(-1, 16 * 7 * 7)
+
+        # Dropout before final layer
+        x = self.dropout(x)
+
+        # Fully connected layer
+        x = self.fc(x)
 
         return F.log_softmax(x, dim=1)
+
+    def count_parameters(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)

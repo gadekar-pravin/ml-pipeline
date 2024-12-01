@@ -25,17 +25,11 @@ class MNISTAugmentation:
 
 def get_transform(train=True):
     """Minimal transforms for better training fit"""
-    if train:
-        return transforms.Compose([
-            transforms.ToTensor(),
-            transforms.RandomRotation(5),  # Very minimal rotation
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])
-    else:
-        return transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])
+    return transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
+
 
 def train_model(save_dir='models'):
     # Set random seeds for reproducibility
@@ -58,7 +52,7 @@ def train_model(save_dir='models'):
 
         train_loader = torch.utils.data.DataLoader(
             train_dataset,
-            batch_size=128,  # Smaller batch size for better convergence
+            batch_size=32,  # Keep small batch size
             shuffle=True,
             num_workers=2,
             pin_memory=False
@@ -87,16 +81,16 @@ def train_model(save_dir='models'):
 
     # Initialize training components
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.AdamW(model.parameters(), lr=0.002, weight_decay=1e-6)
+    optimizer = optim.AdamW(model.parameters(), lr=0.001, betas=(0.9, 0.99), weight_decay=0)
 
     scheduler = optim.lr_scheduler.OneCycleLR(
         optimizer,
-        max_lr=0.01,
+        max_lr=0.025,  # Even higher max LR
         epochs=1,
         steps_per_epoch=len(train_loader),
-        pct_start=0.3,
-        div_factor=5,
-        final_div_factor=25
+        pct_start=0.5,  # 50% warmup
+        div_factor=3,  # Higher initial LR
+        final_div_factor=10
     )
 
     # Training loop
