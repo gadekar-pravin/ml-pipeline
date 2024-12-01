@@ -1,8 +1,7 @@
-
 import torch
 import torch.nn.functional as F
 from torchvision import datasets, transforms
-from model import SimpleCNN
+from model import OptimizedCNN  # Changed from SimpleCNN to OptimizedCNN
 import pytest
 import glob
 import os
@@ -13,12 +12,12 @@ def count_parameters(model):
 
 
 def test_model_architecture():
-    model = SimpleCNN()
+    model = OptimizedCNN()  # Changed from SimpleCNN to OptimizedCNN
 
     # Test 1: Check number of parameters
     num_params = count_parameters(model)
     print(f"Number of parameters: {num_params}")  # Added for debugging
-    assert num_params < 100000, f"Model has {num_params} parameters, should be less than 100000"
+    assert num_params < 25000, f"Model has {num_params} parameters, should be less than 25000"  # Updated threshold to match requirement
 
     # Test 2: Check input shape handling
     test_input = torch.randn(1, 1, 28, 28)
@@ -36,7 +35,7 @@ def test_model_accuracy():
         pytest.skip("No trained model found. Run training first.")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = SimpleCNN().to(device)
+    model = OptimizedCNN().to(device)  # Changed from SimpleCNN to OptimizedCNN
 
     # Load the latest model using weights_only=True for security
     latest_model = max(model_files)
@@ -66,7 +65,7 @@ def test_model_accuracy():
 
     accuracy = 100 * correct / total
     print(f"Model accuracy: {accuracy}%")  # Added for debugging
-    assert accuracy > 80, f"Model accuracy is {accuracy}%, should be > 80%"
+    assert accuracy > 95, f"Model accuracy is {accuracy}%, should be > 95%"  # Updated threshold to match requirement
 
 
 if __name__ == "__main__":
