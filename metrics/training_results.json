@@ -1,17 +1,17 @@
 {
     "epochs": 1,
-    "training_accuracy": 29.563333333333333,
-    "validation_accuracy": 93.88,
-    "training_loss": 1.9123294048472,
-    "validation_loss": 0.253011067584157,
-    "parameters": 6530,
-    "timestamp": "20241201_181311",
+    "training_accuracy": 88.385,
+    "validation_accuracy": 97.68,
+    "training_loss": 0.37771401544834704,
+    "validation_loss": 0.07444315440952778,
+    "parameters": 6266,
+    "timestamp": "20241201_194321",
     "device": "cpu",
-    "batch_size": 128,
+    "batch_size": 256,
     "optimizer": "AdamW",
     "learning_rate": {
-        "initial": 2.8763229579767486e-07,
+        "initial": 2.0557079068430283e-05,
         "max": 0.005,
-        "final": 2.8763229579767486e-07
+        "final": 2.0557079068430283e-05
     }
 }

@@ -12,68 +12,23 @@ import random
 import numpy as np
 import torchvision.transforms.functional as TF
 
-
 class MNISTAugmentation:
-    """Custom augmentation class for MNIST dataset"""
-    def __init__(self, p=0.5):
+    """Simplified augmentation class"""
+    def __init__(self, p=0.2):  # Reduced probability
         self.p = p
 
-    def create_displacement_field(self, size):
-        """Create a proper displacement field for elastic transform"""
-        # Create displacement with correct shape (1, H, W, 2)
-        displacement = torch.rand(1, size, size, 2) * 4 - 2
-        return displacement
-
     def __call__(self, img):
-        # Apply augmentations with probability p
         if random.random() < self.p:
-            # Random rotation (-15 to 15 degrees)
-            angle = random.uniform(-15, 15)
+            angle = random.uniform(-10, 10)  # Reduced rotation range
             img = TF.rotate(img, angle)
-
-        if random.random() < self.p:
-            # Random perspective
-            startpoints = [[0, 0], [28, 0], [28, 28], [0, 28]]
-            endpoints = [[random.randint(-2, 2), random.randint(-2, 2)] for _ in range(4)]
-            endpoints = [[s[0] + e[0], s[1] + e[1]] for s, e in zip(startpoints, endpoints)]
-            img = TF.perspective(img, startpoints, endpoints)
-
-        if random.random() < self.p:
-            # Fixed elastic transform with correct displacement shape
-            displacement = self.create_displacement_field(28)
-            img = TF.elastic_transform(
-                img,
-                displacement,
-                interpolation=TF.InterpolationMode.BILINEAR,
-                fill=0
-            )
-
-        if random.random() < self.p:
-            # Random affine transformation
-            img = TF.affine(
-                img,
-                angle=random.uniform(-5, 5),
-                translate=[random.uniform(-2, 2), random.uniform(-2, 2)],
-                scale=random.uniform(0.9, 1.1),
-                shear=random.uniform(-5, 5)
-            )
-
         return img
-
 
 def get_transform(train=True):
     """Get transform pipeline based on training/testing phase"""
     if train:
         return transforms.Compose([
             transforms.ToTensor(),
-            transforms.RandomApply([
-                transforms.GaussianBlur(kernel_size=3),
-            ], p=0.3),
-            MNISTAugmentation(p=0.7),
-            transforms.RandomApply([
-                transforms.ColorJitter(brightness=0.2, contrast=0.2),
-            ], p=0.3),
-            transforms.RandomErasing(p=0.3),
+            transforms.RandomRotation(5),  # Very minimal rotation
             transforms.Normalize((0.1307,), (0.3081,))
         ])
     else:
@@ -81,7 +36,6 @@ def get_transform(train=True):
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,))
         ])
-
 
 def train_model(save_dir='models'):
     # Set random seeds for reproducibility
@@ -102,10 +56,9 @@ def train_model(save_dir='models'):
         train_dataset = datasets.MNIST('data', train=True, download=True, transform=get_transform(train=True))
         val_dataset = datasets.MNIST('data', train=False, download=True, transform=get_transform(train=False))
 
-        # Reduced batch size and workers for CPU
         train_loader = torch.utils.data.DataLoader(
             train_dataset,
-            batch_size=64,  # Reduced from 128 for more updates per epoch
+            batch_size=256,
             shuffle=True,
             num_workers=2,
             pin_memory=False
@@ -113,7 +66,7 @@ def train_model(save_dir='models'):
 
         val_loader = torch.utils.data.DataLoader(
             val_dataset,
-            batch_size=256,
+            batch_size=1000,
             shuffle=False,
             num_workers=2,
             pin_memory=False
@@ -134,22 +87,15 @@ def train_model(save_dir='models'):
 
     # Initialize training components
     criterion = nn.CrossEntropyLoss()
+    optimizer = optim.AdamW(model.parameters(), lr=0.002, weight_decay=1e-6)  # Further reduced weight decay
 
-    # Adjusted optimizer settings for CPU
-    optimizer = optim.AdamW(
-        model.parameters(),
-        lr=0.008,  # Increased for faster convergence
-        weight_decay=0.0001  # Reduced weight decay
-    )
-
-    steps_per_epoch = len(train_loader)
     scheduler = optim.lr_scheduler.OneCycleLR(
         optimizer,
-        max_lr=0.02,
+        max_lr=0.008,  # Increased max learning rate
         epochs=1,
-        steps_per_epoch=steps_per_epoch,
-        pct_start=0.1,
-        div_factor=8,
+        steps_per_epoch=len(train_loader),
+        pct_start=0.2,
+        div_factor=8,  # Smaller division factor
         final_div_factor=50
     )
 
@@ -165,7 +111,6 @@ def train_model(save_dir='models'):
     for batch_idx, (data, target) in enumerate(pbar):
         data, target = data.to(device), target.to(device)
 
-        # Standard training (no mixed precision for CPU)
         optimizer.zero_grad(set_to_none=True)
         output = model(data)
         loss = criterion(output, target)
@@ -183,7 +128,7 @@ def train_model(save_dir='models'):
 
         # Update running loss and progress bar
         running_loss += loss.item()
-        if batch_idx % 10 == 0:  # Increased frequency for CPU
+        if batch_idx % 10 == 0:
             pbar.set_description(
                 f'Loss: {running_loss / (batch_idx + 1):.3f} | '
                 f'Acc: {batch_acc:.2f}% | '
@@ -262,7 +207,6 @@ def train_model(save_dir='models'):
         print(f"Warning: Training accuracy {final_training_acc:.2f}% is below target of 95%")
 
     return model_path, results
-
 
 if __name__ == "__main__":
     train_model()

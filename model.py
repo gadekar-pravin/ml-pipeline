@@ -6,54 +6,36 @@ import torch.nn.functional as F
 class OptimizedCNN(nn.Module):
     def __init__(self):
         super(OptimizedCNN, self).__init__()
-        # First convolutional layer
+        # First convolutional layer (1 -> 8)
         self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(8)
 
-        # Second convolutional layer
+        # Second convolutional layer (8 -> 16)
         self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1)
         self.bn2 = nn.BatchNorm2d(16)
 
-        # Fully connected layers
-        self.fc1 = nn.Linear(784, 28)  # 7*7*16 = 784
-        self.fc2 = nn.Linear(28, 10)  # Changed from 30 to 28 to match fc1
+        # Third maxpool to reduce FC layer size
+        # After three max pools: 28->14->7->3
+        self.fc1 = nn.Linear(16 * 3 * 3, 32)
+        self.fc2 = nn.Linear(32, 10)
 
-        # Dropout layers
-        self.dropout1 = nn.Dropout2d(0.2)
-        self.dropout2 = nn.Dropout(0.3)
+        # Minimal dropout
+        self.dropout = nn.Dropout(0.05)
 
     def forward(self, x):
-        # First block
+        # First conv block
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.max_pool2d(x, 2)
-        x = self.dropout1(x)
 
-        # Second block
+        # Second conv block
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.max_pool2d(x, 2)
-        x = self.dropout1(x)
+        x = F.max_pool2d(x, 2)  # Additional pooling
 
         # Flatten and fully connected layers
         x = torch.flatten(x, 1)
         x = F.relu(self.fc1(x))
-        x = self.dropout2(x)
+        x = self.dropout(x)
         x = self.fc2(x)
 
         return F.log_softmax(x, dim=1)
-
-def count_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
-
-
-if __name__ == "__main__":
-    # Print model summary
-    model = OptimizedCNN()
-    total_params = count_parameters(model)
-    print(f"\nModel Parameter Analysis:")
-    print(f"Total trainable parameters: {total_params}")
-
-    # Print layer-wise parameters
-    print("\nLayer-wise parameter count:")
-    for name, param in model.named_parameters():
-        if param.requires_grad:
-            print(f"{name}: {param.numel()} parameters")
