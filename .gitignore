@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+ENV/
+
+# MNIST data
+data/MNIST/
+
+# PyTorch models
+*.pth
+
+# IDE
+.vscode/
+.idea/
+
+# Other
+*.log
+.DS_Store
