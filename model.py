@@ -8,12 +8,12 @@ class OptimizedCNN(nn.Module):
         super(OptimizedCNN, self).__init__()
         # Layer 1: Convolutional layer
         # Input: 1x28x28, Output: 8x14x14 (after pooling)
-        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1)
-        self.bn1 = nn.BatchNorm2d(8)
+        self.conv1 = nn.Conv2d(1, 10, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(10)
 
         # Layer 2: Convolutional layer
         # Input: 8x14x14, Output: 16x7x7 (after pooling)
-        self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(10, 16, kernel_size=3, stride=1, padding=1)
         self.bn2 = nn.BatchNorm2d(16)
 
         # Layer 3: Fully connected layer
