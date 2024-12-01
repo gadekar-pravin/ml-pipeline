@@ -7,15 +7,15 @@ class OptimizedCNN(nn.Module):
     def __init__(self):
         super(OptimizedCNN, self).__init__()
         # First conv layer with stride
-        self.conv1 = nn.Conv2d(1, 10, kernel_size=5, stride=2, padding=2)  # 28->14
-        self.bn1 = nn.BatchNorm2d(10)
+        self.conv1 = nn.Conv2d(1, 50, kernel_size=5, stride=2, padding=2)  # 28->14
+        self.bn1 = nn.BatchNorm2d(50)
 
         # Second conv layer with stride
-        self.conv2 = nn.Conv2d(10, 12, kernel_size=3, stride=2, padding=1)  # 14->7
-        self.bn2 = nn.BatchNorm2d(12)
+        self.conv2 = nn.Conv2d(50, 14, kernel_size=3, stride=2, padding=1)  # 14->7
+        self.bn2 = nn.BatchNorm2d(14)
 
         # Small fully connected layers
-        self.fc1 = nn.Linear(12 * 7 * 7, 24)
+        self.fc1 = nn.Linear(14 * 7 * 7, 24)
         self.fc2 = nn.Linear(24, 10)
 
     def forward(self, x):
