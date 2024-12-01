@@ -6,17 +6,17 @@ import torch.nn.functional as F
 class OptimizedCNN(nn.Module):
     def __init__(self):
         super(OptimizedCNN, self).__init__()
-        # First convolutional layer - reduced filters from 32 to 8
+        # First convolutional layer
         self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(8)
 
-        # Second convolutional layer - reduced filters from 64 to 16
+        # Second convolutional layer
         self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1)
         self.bn2 = nn.BatchNorm2d(16)
 
-        # Fully connected layers - significantly reduced sizes
-        self.fc1 = nn.Linear(784, 32)  # 7*7*16 = 784
-        self.fc2 = nn.Linear(32, 10)
+        # Fully connected layers - further reduced sizes
+        self.fc1 = nn.Linear(784, 24)  # 7*7*16 = 784
+        self.fc2 = nn.Linear(24, 10)
 
         # Dropout layers
         self.dropout1 = nn.Dropout2d(0.25)
@@ -45,7 +45,6 @@ class OptimizedCNN(nn.Module):
         x = self.fc2(x)
 
         return F.log_softmax(x, dim=1)
-
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
