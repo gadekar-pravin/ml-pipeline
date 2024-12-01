@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -7,51 +6,55 @@ import torch.nn.functional as F
 class OptimizedCNN(nn.Module):
     def __init__(self):
         super(OptimizedCNN, self).__init__()
-        # First convolutional layer: input=1, output=4, kernel=3x3
-        self.conv1 = nn.Conv2d(1, 4, kernel_size=3, padding=1)
-        # Second convolutional layer: input=4, output=8, kernel=3x3
-        self.conv2 = nn.Conv2d(4, 8, kernel_size=3, padding=1)
-        # Third convolutional layer: input=8, output=16, kernel=3x3
-        self.conv3 = nn.Conv2d(8, 16, kernel_size=3, padding=1)
+        # First convolutional layer
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(32)
+
+        # Second convolutional layer
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(64)
+
+        # Third convolutional layer
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.bn3 = nn.BatchNorm2d(64)
+
         # Fully connected layers
-        self.fc1 = nn.Linear(16 * 3 * 3, 32)
-        self.fc2 = nn.Linear(32, 10)
+        self.fc1 = nn.Linear(3136, 128)  # 7x7x64 = 3136
+        self.fc2 = nn.Linear(128, 10)
 
-        # Batch Normalization layers
-        self.bn1 = nn.BatchNorm2d(4)
-        self.bn2 = nn.BatchNorm2d(8)
-        self.bn3 = nn.BatchNorm2d(16)
-
-        # Dropout
-        self.dropout1 = nn.Dropout(0.25)
-        self.dropout2 = nn.Dropout(0.25)
+        # Dropout layers
+        self.dropout1 = nn.Dropout2d(0.25)
+        self.dropout2 = nn.Dropout2d(0.25)
+        self.dropout3 = nn.Dropout(0.5)
 
     def forward(self, x):
-        # First conv block
+        # First block
         x = self.conv1(x)
         x = self.bn1(x)
         x = F.relu(x)
         x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
 
-        # Second conv block
+        # Second block
         x = self.conv2(x)
         x = self.bn2(x)
         x = F.relu(x)
-        x = F.max_pool2d(x, 2)
-        x = self.dropout1(x)
+        x = self.dropout2(x)
 
-        # Third conv block
+        # Third block
         x = self.conv3(x)
         x = self.bn3(x)
         x = F.relu(x)
         x = F.max_pool2d(x, 2)
-        x = self.dropout2(x)
 
         # Flatten and fully connected layers
-        x = x.view(-1, 16 * 3 * 3)
-        x = F.relu(self.fc1(x))
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout3(x)
         x = self.fc2(x)
-        return x
+
+        return F.log_softmax(x, dim=1)
 
 
 def count_parameters(model):
