@@ -138,19 +138,19 @@ def train_model(save_dir='models'):
     # Adjusted optimizer settings for CPU
     optimizer = optim.AdamW(
         model.parameters(),
-        lr=0.005,  # Increased initial learning rate
+        lr=0.008,  # Increased for faster convergence
         weight_decay=0.0001  # Reduced weight decay
     )
 
     steps_per_epoch = len(train_loader)
     scheduler = optim.lr_scheduler.OneCycleLR(
         optimizer,
-        max_lr=0.015,  # Increased max learning rate
+        max_lr=0.02,
         epochs=1,
         steps_per_epoch=steps_per_epoch,
-        pct_start=0.1,  # Warmup for 10% of the training
-        div_factor=10,
-        final_div_factor=50,
+        pct_start=0.1,
+        div_factor=8,
+        final_div_factor=50
     )
 
     # Training loop

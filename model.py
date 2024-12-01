@@ -6,19 +6,19 @@ import torch.nn.functional as F
 class OptimizedCNN(nn.Module):
     def __init__(self):
         super(OptimizedCNN, self).__init__()
-        # First convolutional layer with more filters
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
-        self.bn1 = nn.BatchNorm2d(16)
+        # First convolutional layer
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(8)
 
         # Second convolutional layer
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
-        self.bn2 = nn.BatchNorm2d(32)
+        self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(16)
 
         # Fully connected layers
-        self.fc1 = nn.Linear(1568, 128)  # 7*7*32 = 1568
-        self.fc2 = nn.Linear(128, 10)
+        self.fc1 = nn.Linear(784, 48)  # 7*7*16 = 784
+        self.fc2 = nn.Linear(48, 10)
 
-        # Dropout layers with reduced rates for faster training
+        # Dropout layers
         self.dropout1 = nn.Dropout2d(0.2)
         self.dropout2 = nn.Dropout(0.3)
 
