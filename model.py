@@ -6,41 +6,36 @@ import torch.nn.functional as F
 class OptimizedCNN(nn.Module):
     def __init__(self):
         super(OptimizedCNN, self).__init__()
-        # First convolutional layer
-        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1)
-        self.bn1 = nn.BatchNorm2d(8)
+        # First convolutional layer with more filters
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(16)
 
         # Second convolutional layer
-        self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1)
-        self.bn2 = nn.BatchNorm2d(16)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(32)
 
-        # Fully connected layers - further reduced sizes
-        self.fc1 = nn.Linear(784, 24)  # 7*7*16 = 784
-        self.fc2 = nn.Linear(24, 10)
+        # Fully connected layers
+        self.fc1 = nn.Linear(1568, 128)  # 7*7*32 = 1568
+        self.fc2 = nn.Linear(128, 10)
 
-        # Dropout layers
-        self.dropout1 = nn.Dropout2d(0.25)
-        self.dropout2 = nn.Dropout(0.5)
+        # Dropout layers with reduced rates for faster training
+        self.dropout1 = nn.Dropout2d(0.2)
+        self.dropout2 = nn.Dropout(0.3)
 
     def forward(self, x):
         # First block
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = F.relu(x)
+        x = F.relu(self.bn1(self.conv1(x)))
         x = F.max_pool2d(x, 2)
         x = self.dropout1(x)
 
         # Second block
-        x = self.conv2(x)
-        x = self.bn2(x)
-        x = F.relu(x)
+        x = F.relu(self.bn2(self.conv2(x)))
         x = F.max_pool2d(x, 2)
         x = self.dropout1(x)
 
         # Flatten and fully connected layers
         x = torch.flatten(x, 1)
-        x = self.fc1(x)
-        x = F.relu(x)
+        x = F.relu(self.fc1(x))
         x = self.dropout2(x)
         x = self.fc2(x)
 

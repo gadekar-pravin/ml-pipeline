@@ -105,10 +105,10 @@ def train_model(save_dir='models'):
         # Reduced batch size and workers for CPU
         train_loader = torch.utils.data.DataLoader(
             train_dataset,
-            batch_size=128,  # Reduced from 512 for CPU
+            batch_size=64,  # Reduced from 128 for more updates per epoch
             shuffle=True,
-            num_workers=2,  # Reduced from 4 for CPU
-            pin_memory=False  # Disabled for CPU
+            num_workers=2,
+            pin_memory=False
         )
 
         val_loader = torch.utils.data.DataLoader(
@@ -138,19 +138,19 @@ def train_model(save_dir='models'):
     # Adjusted optimizer settings for CPU
     optimizer = optim.AdamW(
         model.parameters(),
-        lr=0.002,  # Increased from 0.001
-        weight_decay=0.01
+        lr=0.005,  # Increased initial learning rate
+        weight_decay=0.0001  # Reduced weight decay
     )
 
     steps_per_epoch = len(train_loader)
     scheduler = optim.lr_scheduler.OneCycleLR(
         optimizer,
-        max_lr=0.01,  # Increased from 0.005
+        max_lr=0.015,  # Increased max learning rate
         epochs=1,
         steps_per_epoch=steps_per_epoch,
-        pct_start=0.3,  # Increased from 0.2
-        div_factor=20,  # Adjusted from 25
-        final_div_factor=1000,
+        pct_start=0.1,  # Warmup for 10% of the training
+        div_factor=10,
+        final_div_factor=50,
     )
 
     # Training loop
