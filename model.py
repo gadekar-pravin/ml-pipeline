@@ -15,8 +15,8 @@ class OptimizedCNN(nn.Module):
         self.bn2 = nn.BatchNorm2d(16)
 
         # Fully connected layers
-        self.fc1 = nn.Linear(784, 48)  # 7*7*16 = 784
-        self.fc2 = nn.Linear(48, 10)
+        self.fc1 = nn.Linear(784, 28)  # Reduced from 30 to 28 nodes
+        self.fc2 = nn.Linear(30, 10)
 
         # Dropout layers
         self.dropout1 = nn.Dropout2d(0.2)
