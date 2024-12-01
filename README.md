@@ -1,3 +1,5 @@
+[![CI/CD](https://github.com/gadekar-pravin/ml-pipeline/actions/workflows/ml-pipeline.yml/badge.svg)](https://github.com/gadekar-pravin/ml-pipeline/actions/workflows/ml-pipeline.yml)
+
 # ML Pipeline with CI/CD
 
 This project demonstrates a complete CI/CD pipeline for a machine learning project using PyTorch and GitHub Actions. It includes a simple CNN model trained on the MNIST dataset, with automated testing and deployment processes.

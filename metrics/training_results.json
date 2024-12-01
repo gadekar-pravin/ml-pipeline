@@ -1,0 +1,17 @@
+{
+    "epochs": 1,
+    "training_accuracy": 29.563333333333333,
+    "validation_accuracy": 93.88,
+    "training_loss": 1.9123294048472,
+    "validation_loss": 0.253011067584157,
+    "parameters": 6530,
+    "timestamp": "20241201_181311",
+    "device": "cpu",
+    "batch_size": 128,
+    "optimizer": "AdamW",
+    "learning_rate": {
+        "initial": 2.8763229579767486e-07,
+        "max": 0.005,
+        "final": 2.8763229579767486e-07
+    }
+}
