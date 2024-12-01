@@ -1,4 +1,4 @@
-# test_model.py
+
 import torch
 import torch.nn.functional as F
 from torchvision import datasets, transforms
@@ -38,9 +38,9 @@ def test_model_accuracy():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = SimpleCNN().to(device)
 
-    # Load the latest model
+    # Load the latest model using weights_only=True for security
     latest_model = max(model_files)
-    model.load_state_dict(torch.load(latest_model))
+    model.load_state_dict(torch.load(latest_model, weights_only=True))
 
     # Prepare test data
     transform = transforms.Compose([
