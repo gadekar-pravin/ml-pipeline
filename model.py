@@ -6,36 +6,28 @@ import torch.nn.functional as F
 class OptimizedCNN(nn.Module):
     def __init__(self):
         super(OptimizedCNN, self).__init__()
-        # First convolutional layer (1 -> 8)
-        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1)
-        self.bn1 = nn.BatchNorm2d(8)
+        # First conv layer with stride
+        self.conv1 = nn.Conv2d(1, 10, kernel_size=5, stride=2, padding=2)  # 28->14
+        self.bn1 = nn.BatchNorm2d(10)
 
-        # Second convolutional layer (8 -> 16)
-        self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1)
-        self.bn2 = nn.BatchNorm2d(16)
+        # Second conv layer with stride
+        self.conv2 = nn.Conv2d(10, 12, kernel_size=3, stride=2, padding=1)  # 14->7
+        self.bn2 = nn.BatchNorm2d(12)
 
-        # Third maxpool to reduce FC layer size
-        # After three max pools: 28->14->7->3
-        self.fc1 = nn.Linear(16 * 3 * 3, 32)
-        self.fc2 = nn.Linear(32, 10)
-
-        # Minimal dropout
-        self.dropout = nn.Dropout(0.05)
+        # Small fully connected layers
+        self.fc1 = nn.Linear(12 * 7 * 7, 24)
+        self.fc2 = nn.Linear(24, 10)
 
     def forward(self, x):
         # First conv block
         x = F.relu(self.bn1(self.conv1(x)))
-        x = F.max_pool2d(x, 2)
 
         # Second conv block
         x = F.relu(self.bn2(self.conv2(x)))
-        x = F.max_pool2d(x, 2)
-        x = F.max_pool2d(x, 2)  # Additional pooling
 
         # Flatten and fully connected layers
         x = torch.flatten(x, 1)
         x = F.relu(self.fc1(x))
-        x = self.dropout(x)
         x = self.fc2(x)
 
         return F.log_softmax(x, dim=1)

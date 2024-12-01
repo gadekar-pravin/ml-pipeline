@@ -24,7 +24,7 @@ class MNISTAugmentation:
         return img
 
 def get_transform(train=True):
-    """Get transform pipeline based on training/testing phase"""
+    """Minimal transforms for better training fit"""
     if train:
         return transforms.Compose([
             transforms.ToTensor(),
@@ -58,7 +58,7 @@ def train_model(save_dir='models'):
 
         train_loader = torch.utils.data.DataLoader(
             train_dataset,
-            batch_size=256,
+            batch_size=128,  # Smaller batch size for better convergence
             shuffle=True,
             num_workers=2,
             pin_memory=False
@@ -87,16 +87,16 @@ def train_model(save_dir='models'):
 
     # Initialize training components
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.AdamW(model.parameters(), lr=0.002, weight_decay=1e-6)  # Further reduced weight decay
+    optimizer = optim.AdamW(model.parameters(), lr=0.002, weight_decay=1e-6)
 
     scheduler = optim.lr_scheduler.OneCycleLR(
         optimizer,
-        max_lr=0.008,  # Increased max learning rate
+        max_lr=0.01,
         epochs=1,
         steps_per_epoch=len(train_loader),
-        pct_start=0.2,
-        div_factor=8,  # Smaller division factor
-        final_div_factor=50
+        pct_start=0.3,
+        div_factor=5,
+        final_div_factor=25
     )
 
     # Training loop
