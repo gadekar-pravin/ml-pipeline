@@ -2,3 +2,4 @@ torch
 torchvision
 pytest
 numpy
+idx2numpy
